@@ -23,7 +23,7 @@ resource "aws_vpc" "dev-vpc" {
 
 #-----Subnet 1-----
 resource "aws_subnet" "public-subnet-1" {
-  vpc_id = aws_vpc.dev-vpc
+  vpc_id = "aws_vpc.dev-vpc"
   cidr_block = "10.132.121.0/24"
   availability_zone = "us-east-1a"
 
@@ -35,7 +35,7 @@ resource "aws_subnet" "public-subnet-1" {
 
 #-----Subnet 2-----
 resource "aws_subnet" "public-subnet-2" {
-  vpc_id = aws_vpc.dev-vpc
+  vpc_id = "aws_vpc.dev-vpc"
   cidr_block = "10.132.122.0/24"
   availability_zone = "us-east-1b"
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "public-subnet-2" {
 
 #-----Subnet 3-----
 resource "aws_subnet" "private-subnet-1" {
-  vpc_id = aws_vpc.dev-vpc
+  vpc_id = "aws_vpc.dev-vpc"
   cidr_block = "10.132.123.0/24"
   availability_zone = "us-east-1a"
 
@@ -59,7 +59,7 @@ resource "aws_subnet" "private-subnet-1" {
 
 #-----Subnet 4-----
 resource "aws_subnet" "private-subnet-2" {
-  vpc_id = "vpc-0a1c55ffe7ed24499"
+  vpc_id = "aws_vpc.dev-vpc"
   cidr_block = "10.132.124.0/24"
   availability_zone = "us-east-1b"
 
@@ -73,16 +73,19 @@ resource "aws_subnet" "private-subnet-2" {
 resource "aws_security_group" "Loadbalancer" {
     name = "Loadbalancer"
     description = "Load balancer SG"
-    vpc_id = aws_vpc.dev-vpc
+    vpc_id = "aws_vpc.dev-vpc"
 
     ingress = [
         {
-            cidr_blocks = [ "0.0.0.0/0" ]
             description = "Allow http traffic"
             from_port = 80
-            ipv6_cidr_blocks = [ "::/0" ]
-            protocol = "tcp"
             to_port = 80
+            protocol = "tcp"
+            cidr_blocks = [ "0.0.0.0/0" ]
+            ipv6_cidr_blocks = [ "::/0" ]
+            prefix_list_ids = null
+            security_groups = null
+            self = null
         }
     ]
 
@@ -93,6 +96,10 @@ resource "aws_security_group" "Loadbalancer" {
             protocol         = "-1"
             cidr_blocks      = ["0.0.0.0/0"]
             ipv6_cidr_blocks = ["::/0"]
+            prefix_list_ids = null
+            security_groups = null
+            self = null
+            description = null
         }
     ]
 }
@@ -102,18 +109,21 @@ resource "aws_security_group" "Loadbalancer" {
 resource "aws_security_group" "Webserver" {
     name = "Webserver"
     description = "Web Server SG"
-    vpc_id = aws_vpc.dev-vpc
+    vpc_id = "aws_vpc.dev-vpc"
 
     ingress = [
         {
-            cidr_blocks = [ "0.0.0.0/0" ]
+
             description = "Allow traffic from Loadbalancer SG"
             from_port = 80
-            ipv6_cidr_blocks = [ "::/0" ]
-            prefix_list_ids = [ "value" ]
-            protocol = "TCP"
-            security_groups = [ "LoadBalancer" ]
             to_port = 80
+            security_groups = [ "LoadBalancer" ]
+            protocol = "TCP"
+            cidr_blocks = [ "0.0.0.0/0" ]
+            ipv6_cidr_blocks = [ "::/0" ]
+            prefix_list_ids = null
+            security_groups = null
+            self = null
         }
     ]
 
@@ -124,6 +134,10 @@ resource "aws_security_group" "Webserver" {
             protocol         = "-1"
             cidr_blocks      = ["0.0.0.0/0"]
             ipv6_cidr_blocks = ["::/0"]
+            prefix_list_ids = null
+            security_groups = null
+            self = null
+            description = null
         }
     ]
 
