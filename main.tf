@@ -143,3 +143,37 @@ resource "aws_security_group" "Webserver" {
 
 
 }
+
+
+#-----Load balancer-----
+
+
+
+#-----Lauch Template-----
+resource "aws_launch_template" "TOP-Template-1" {
+  name = "TOP-Template-1"
+  image_id = "ami-0c2b8ca1dad447f8a"
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [ "WebServer" ]
+  key_name = "TOP-keys"
+  user_data = <<-EOF
+  #!/bin/sh
+  yum update -y
+  yum install -y httpd
+  systemctl start httpd
+  echo "hello world from $(hostname)" > /var/www/html/index.html
+  EOF
+}
+
+#-----Autoscaling Group-----
+resource "aws_autoscaling_group" "asg-1" {
+    availability_zones = [ "us-east-1a, us-east-1b" ]
+    desired_capacity = 2
+    min_size = 2
+    max_size = 2
+
+    launch_template {
+      id = aws_launch_template.TOP-Template-1.id
+      version = "$Latest"
+    }
+}
